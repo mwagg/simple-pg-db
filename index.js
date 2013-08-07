@@ -24,6 +24,10 @@ module.exports = function (opts) {
       args.push(resolver);
 
       pg.connect(opts.connectionString, function (err, client) {
+        if (err) {
+          deferred.reject(err);
+          return;
+        }
         client.query.apply(client, args);
       });
 
