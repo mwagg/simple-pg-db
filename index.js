@@ -8,22 +8,22 @@ module.exports = function (opts) {
     query: function (query, params) {
       var deferred = Q.defer();
 
-      var resolver = function (err, results) {
-        if (err !== null) {
-          deferred.reject(err);
-          return;
+      pg.connect(opts.connectionString, function (err, client, done) {
+        var resolver = function (err, results) {
+          done();
+          if (err !== null) {
+            deferred.reject(err);
+            return;
+          }
+
+          deferred.resolve(results);
+        };
+
+        var args = [query];
+        if (params !== undefined) {
+          args.push(params); 
         }
-
-        deferred.resolve(results);
-      };
-
-      var args = [query];
-      if (params !== undefined) {
-        args.push(params); 
-      }
-      args.push(resolver);
-
-      pg.connect(opts.connectionString, function (err, client) {
+        args.push(resolver);
         if (err) {
           deferred.reject(err);
           return;
