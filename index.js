@@ -1,37 +1,21 @@
-pg = require("pg");
-Q = require("q");
+var pg = require("pg");
+var Q = require("q");
 
 var arrayParsePattern = /{(.*)}/;
 
 module.exports = function (opts) {
   return {
     query: function (query, params) {
-      var deferred = Q.defer();
-
-      pg.connect(opts.connectionString, function (err, client, done) {
-        var resolver = function (err, results) {
-          done();
-          if (err !== null) {
-            deferred.reject(err);
-            return;
-          }
-
-          deferred.resolve(results);
-        };
-
-        var args = [query];
-        if (params !== undefined) {
-          args.push(params); 
-        }
-        args.push(resolver);
-        if (err) {
-          deferred.reject(err);
-          return;
-        }
-        client.query.apply(client, args);
-      });
-
-      return deferred.promise;
+      return Q.ninvoke(pg, 'connect', opts.connectionString)
+      .then(
+        function (args) { 
+          var client = args[0]; var done = args[1];
+          return Q.ninvoke(client, 'query', query, params)
+          .then(function (result) {
+            done();
+            return result;
+          });
+        });
     },
 
     array: {

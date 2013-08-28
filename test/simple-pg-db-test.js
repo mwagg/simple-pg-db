@@ -70,5 +70,14 @@ describe('simple-pg-db', function () {
           .and.notify(done);
       });
     });
+
+    it('can handle lots of concurrent queries', function (done) {
+      var queries = [];
+      for (var i = 0; i < 20; i++) {
+        queries.push(db.query("SELECT id, name FROM simple_pg;"));
+      }
+
+      expect(Q.all(queries)).to.be.fulfilled.and.notify(done);
+    });
   });
 });
