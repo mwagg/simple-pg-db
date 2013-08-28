@@ -1,0 +1,74 @@
+var simplePgDb = require('../index');
+var chai = require('chai');
+var expect = chai.expect;
+var chaiAsPromised = require('chai-as-promised');
+var Q = require('q');
+
+var TEST_DB_NAME = "simple_pg_db_test";
+
+chai.use(chaiAsPromised);
+
+describe('simple-pg-db', function () {
+  it('accepts just a connection string', function () {
+    expect(function () {
+      simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+    }).to.not.throw();
+  });
+
+  describe('query', function () {
+    var db;
+    var queryResult;
+
+    before(function (done) {
+      db = simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+      expect(
+        db.query("INSERT INTO simple_pg (name) VALUES ('test-1'); INSERT INTO simple_pg (name) VALUES ('test-2');"))
+        .to.be.fulfilled.and.notify(done);
+    });
+
+    describe('for simple queries', function () {
+      var query;
+
+      before(function () {
+        query = db.query('SELECT id, name FROM simple_pg ORDER BY name;');
+      });
+
+      it('resolves its promise', function (done) {
+        expect(query).to.be.fulfilled.and.notify(done);
+      });
+
+      it('returns the row count', function (done) {
+        expect(query).to.eventually.have.property('rowCount', 2).and.notify(done);
+      });
+
+      it('returns the results', function (done) {
+        expect(
+          query.then(function (result) {
+            expect(result.rows).to.deep.equal([ { id: 1, name: 'test-1' }, { id: 2, name: 'test-2' }]);
+        })).and.notify(done);
+      });
+    });
+
+    it('allows queries with parameters', function (done) {
+      var query = db.query('SELECT id, name FROM simple_pg WHERE name = $1;', ['test-2']);
+
+      expect(query.then(function (r) { return r.rows; }))
+        .to.eventually.deep.equal([{ id: 2, name: 'test-2'}])
+        .and.notify(done);
+    });
+
+    describe('when there is an during a query', function () {
+      var query;
+
+      before(function () {
+        query = db.query('INSERT INTO simple_pg (name) VALUES (null);');
+      });
+
+      it('rejects its promise', function (done) {
+        expect(query).to.be.rejected
+          .with(Error, 'null value in column "name" violates not-null constraint')
+          .and.notify(done);
+      });
+    });
+  });
+});
