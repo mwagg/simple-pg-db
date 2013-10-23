@@ -27,6 +27,10 @@ module.exports = function (params) {
     }
     
     delete clonedParams.user;
+  } else {
+    if (clonedParams.password) {
+      throw new Error('Password parameter requires the user parameter');
+    }
   }
 
   if (clonedParams.port) {
@@ -42,7 +46,7 @@ module.exports = function (params) {
   additionalParams = Object.keys(clonedParams);
 
   if (additionalParams.length > 0) {
-    connString += '?' + additionalParams[0];
+    connString += '?' + additionalParams[0] + '=' + clonedParams[additionalParams[0]];
     additionalParams.shift();
 
     additionalParams.forEach(function (pName) {

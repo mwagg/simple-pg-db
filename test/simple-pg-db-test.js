@@ -9,9 +9,9 @@ var TEST_DB_NAME = "simple_pg_db_test";
 chai.use(chaiAsPromised);
 
 describe('simple-pg-db', function () {
-  it('accepts just a connection string', function () {
+  it('accepts an object with the parameters to compose a connection string', function () {
     expect(function () {
-      simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+      simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
     }).to.not.throw();
   });
 
@@ -20,7 +20,7 @@ describe('simple-pg-db', function () {
     var queryResult;
 
     before(function (done) {
-      db = simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+      db = simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
       expect(
         db.query("INSERT INTO simple_pg (name) VALUES ('test-1'); INSERT INTO simple_pg (name) VALUES ('test-2');"))
         .to.be.fulfilled.and.notify(done);
