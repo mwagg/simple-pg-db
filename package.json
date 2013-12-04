@@ -1,6 +1,6 @@
 {
   "name": "simple-pg-db",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "A stupidly simple wrapper around the pg module allowing really simple db requests to be made.",
   "main": "index.js",
   "scripts": {
