@@ -4,7 +4,7 @@ var connectionString = require("./connection-string");
 var arrayParsePattern = /{(.*)}/;
 
 module.exports = function (opts) {
-  var connString = connectionString(opts);
+  var connString = (!opts || !opts.connectionString) ? connectionString(opts) : opts.connectionString;
   
   return {
     query: function (query, params) {

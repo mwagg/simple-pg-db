@@ -9,6 +9,12 @@ var TEST_DB_NAME = "simple_pg_db_test";
 chai.use(chaiAsPromised);
 
 describe('simple-pg-db', function () {
+  it('accepts just a connection string', function () {
+    expect(function () {
+      simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+    }).to.not.throw();
+  });
+
   it('accepts an object with the parameters to compose a connection string', function () {
     expect(function () {
       simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
