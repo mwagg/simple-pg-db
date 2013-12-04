@@ -15,12 +15,18 @@ describe('simple-pg-db', function () {
     }).to.not.throw();
   });
 
+  it('accepts an object with the parameters to compose a connection string', function () {
+    expect(function () {
+      simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
+    }).to.not.throw();
+  });
+
   describe('query', function () {
     var db;
     var queryResult;
 
     before(function (done) {
-      db = simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+      db = simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
       expect(
         db.query("INSERT INTO simple_pg (name) VALUES ('test-1'); INSERT INTO simple_pg (name) VALUES ('test-2');"))
         .to.be.fulfilled.and.notify(done);
