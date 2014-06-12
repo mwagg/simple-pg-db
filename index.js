@@ -5,7 +5,7 @@ var arrayParsePattern = /{(.*)}/;
 
 module.exports = function (opts) {
   var connString = (!opts || !opts.connectionString) ? connectionString(opts) : opts.connectionString;
-  
+
   return {
     query: function (query, params) {
       return Q.ninvoke(pg, 'connect', connString)
@@ -21,6 +21,16 @@ module.exports = function (opts) {
     },
 
     array: {
+      arrayToSqlList: function (values) {
+        return '(' + values.reduce(function (previousValue, currentValue) {
+          if ('string' === typeof currentValue) {
+            currentValue =  '\'' + currentValue + '\'';
+          }
+
+          return ((previousValue) ? previousValue + ',' : '') + currentValue;
+        }, '') + ')';
+      },
+
       arrayToSql: function (values) {
         return "{" + values.join(",") + "}";
       },
