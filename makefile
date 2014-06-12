@@ -4,7 +4,7 @@ export PATH :=./node_modules/.bin/:$(PATH)
 .PHONY: test create-test-db
 
 test: create-test-db
-	mocha --recursive
+	mocha --recursive -R spec
 
 create-test-db:
 	psql template1 -c 'DROP DATABASE IF EXISTS simple_pg_db_test;'
