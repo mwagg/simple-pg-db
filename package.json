@@ -1,6 +1,6 @@
 {
   "name": "simple-pg-db",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A stupidly simple wrapper around the pg module allowing really simple db requests to be made.",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "license": "BSD",
   "dependencies": {
     "q": "~0.9.6",
-    "pg": "~2.3.1"
+    "pg": "~3.6.0"
   },
   "devDependencies": {
     "mocha": "~1.12.0",
