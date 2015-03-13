@@ -4,20 +4,20 @@ var expect = chai.expect;
 var chaiAsPromised = require('chai-as-promised');
 var Q = require('q');
 
-var TEST_DB_NAME = "simple_pg_db_test";
+var TEST_DB_NAME = 'postgres';
 
 chai.use(chaiAsPromised);
 
 describe('simple-pg-db', function () {
   it('accepts just a connection string', function () {
     expect(function () {
-      simplePgDb({ connectionString: 'tcp://localhost:5432/' + TEST_DB_NAME });
+      simplePgDb({ connectionString: 'postgres://postgres:simple@localhost:5432/' + TEST_DB_NAME });
     }).to.not.throw();
   });
 
   it('accepts an object with the parameters to compose a connection string', function () {
     expect(function () {
-      simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
+      simplePgDb({ user: 'postgres', password: 'simple', host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
     }).to.not.throw();
   });
 
@@ -26,10 +26,16 @@ describe('simple-pg-db', function () {
     var queryResult;
 
     before(function (done) {
-      db = simplePgDb({ host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
-      expect(
-        db.query("INSERT INTO simple_pg (name) VALUES ('test-1'); INSERT INTO simple_pg (name) VALUES ('test-2');"))
-        .to.be.fulfilled.and.notify(done);
+      db = simplePgDb({ user: 'postgres', password: 'simple', host: 'localhost', port: 5432, dbname: TEST_DB_NAME });
+      expect(db.query('DROP TABLE IF EXISTS simple_pg;')
+      .then(function () {
+        return db.query('CREATE TABLE IF NOT EXISTS simple_pg (id serial, name text not null);');
+      }).then(function () {
+        return Q.all([
+          db.query("INSERT INTO simple_pg (name) VALUES ('test-1');"),
+          db.query("INSERT INTO simple_pg (name) VALUES ('test-2');")
+        ]);
+      })).to.be.fulfilled.and.notify(done);
     });
 
     describe('for simple queries', function () {
@@ -50,7 +56,7 @@ describe('simple-pg-db', function () {
       it('returns the results', function (done) {
         expect(
           query.then(function (result) {
-            expect(result.rows).to.deep.equal([ { id: 1, name: 'test-1' }, { id: 2, name: 'test-2' }]);
+          expect(result.rows).to.deep.equal([ { id: 1, name: 'test-1' }, { id: 2, name: 'test-2' }]);
         })).and.notify(done);
       });
     });
@@ -59,8 +65,8 @@ describe('simple-pg-db', function () {
       var query = db.query('SELECT id, name FROM simple_pg WHERE name = $1;', ['test-2']);
 
       expect(query.then(function (r) { return r.rows; }))
-        .to.eventually.deep.equal([{ id: 2, name: 'test-2'}])
-        .and.notify(done);
+      .to.eventually.deep.equal([{ id: 2, name: 'test-2'}])
+      .and.notify(done);
     });
 
     describe('when there is an during a query', function () {
@@ -71,16 +77,15 @@ describe('simple-pg-db', function () {
       });
 
       it('rejects its promise', function (done) {
-        expect(query).to.be.rejected
-          .with(Error, 'null value in column "name" violates not-null constraint')
-          .and.notify(done);
+        expect(query).to.be.rejectedWith(Error, 'null value in column "name" violates not-null constraint')
+        .and.notify(done);
       });
     });
 
     it('can handle lots of concurrent queries', function (done) {
       var queries = [];
       for (var i = 0; i < 20; i++) {
-        queries.push(db.query("SELECT id, name FROM simple_pg;"));
+        queries.push(db.query('SELECT id, name FROM simple_pg;'));
       }
 
       expect(Q.all(queries)).to.be.fulfilled.and.notify(done);
