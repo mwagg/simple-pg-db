@@ -25,7 +25,7 @@ module.exports = function (params) {
     } else {
       connString = clonedParams.user + '@' + connString;
     }
-    
+
     delete clonedParams.user;
   } else {
     if (clonedParams.password) {

@@ -93,7 +93,7 @@ describe('connectionString', function () {
   it('returns "postgres://my.db?[PARAMETERS]" when it is called with host "my.db", application_name "myapp" and keepalives 1, and [PARAMETERS] are the last two parameters name=value format separated by & in any order', function () {
     var params = {
       host: 'my.db',
-      keepalives: 1, 
+      keepalives: 1,
       application_name: 'myapp'
     };
 

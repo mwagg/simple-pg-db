@@ -10,7 +10,7 @@ module.exports = function (opts) {
     query: function (query, params) {
       return Q.ninvoke(pg, 'connect', connString)
       .then(
-        function (args) { 
+        function (args) {
           var client = args[0]; var done = args[1];
           return Q.ninvoke(client, 'query', query, params)
           .then(function (result) {
